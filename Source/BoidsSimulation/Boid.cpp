@@ -3,6 +3,8 @@
 
 #include "Boid.h"
 
+#include "Kismet/GameplayStatics.h"
+
 // Sets default values
 ABoid::ABoid()
 {
@@ -16,9 +18,18 @@ void ABoid::BeginPlay()
 {
 	Super::BeginPlay();
 
+	BoidManager = Cast<ABoidManager>(UGameplayStatics::GetActorOfClass(GetWorld(),ABoidManager::StaticClass()));
+
+	LocalFlockArea = GetComponentByClass<USphereComponent>();
+
+	if (LocalFlockArea != nullptr)
+	{
+		LocalFlockArea -> SetSphereRadius(BoidManager -> GetLocalFlockRadius());
+	}
+	
 	Velocity = GetActorForwardVector();
 	Velocity = Velocity.GetSafeNormal();
-	Velocity *= 500;
+	Velocity *= FMath::RandRange(BoidManager->GetMinSpeed(),BoidManager->GetMaxSpeed());
 	
 }
 
@@ -27,7 +38,7 @@ void ABoid::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	Steer(DeltaTime);
-	StayInBoundries();
+	StayInBoundaries();
 }
 
 void ABoid::Steer(float DeltaTime)
@@ -38,7 +49,7 @@ void ABoid::Steer(float DeltaTime)
 	
 }
 
-void ABoid::StayInBoundries()
+void ABoid::StayInBoundaries()
 {
 	FVector currentLocation = GetActorLocation();
 	if (currentLocation.X < -4000)

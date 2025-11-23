@@ -4,19 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Components/SphereComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "BoidManager.h"
-#include "Boid.generated.h"
+#include "BoidManager.generated.h"
 
 UCLASS()
-class BOIDSSIMULATION_API ABoid : public AActor
+class BOIDSSIMULATION_API ABoidManager : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ABoid();
+	ABoidManager();
 
 protected:
 	// Called when the game starts or when spawned
@@ -27,12 +24,18 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	FVector Velocity;
+	UPROPERTY(EditAnywhere)
+	float MinSpeed;
 
-protected:
-    void Steer(float DeltaTime);
-	void StayInBoundaries();
+	UPROPERTY(EditAnywhere)
+	float MaxSpeed;
 
-	ABoidManager* BoidManager;
-	USphereComponent* LocalFlockArea;
+	UPROPERTY(EditAnywhere)
+	float LocalFlockRadius;
+
+public:
+
+	float GetMinSpeed();
+	float GetMaxSpeed();
+	float GetLocalFlockRadius();
 };
