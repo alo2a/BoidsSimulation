@@ -17,18 +17,18 @@ void ABoidSpawner::BeginPlay()
 	Super::BeginPlay();
 	for (int i = 0; i < SpawnCount; ++i)
 	{
-		FVector spawnPosition;
+		FVector SpawnPosition;
 		if (EnableCenterSpawn)
 		{
-			spawnPosition= FVector(0, 0, 0);
+			SpawnPosition= FVector(0, 0, 0);
 		}
 		else
 		{
-			spawnPosition= GetRandomPosition(-SpawnArea,SpawnArea);
+			SpawnPosition= GetRandomPosition(-SpawnArea,SpawnArea);
 		}
-		FRotator spawnRotation(0,FMath::RandRange(-180,180),0);
+		FRotator SpawnRotation(0,FMath::RandRange(-180,180),0);
 
-		ABoid* Boid = GetWorld()->SpawnActor<ABoid>(ActorToSpawn,spawnPosition,spawnRotation);
+		ABoid* Boid = GetWorld()->SpawnActor<ABoid>(ActorToSpawn,SpawnPosition,SpawnRotation);
 	} 
 }
 

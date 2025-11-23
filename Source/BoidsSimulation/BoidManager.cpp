@@ -40,3 +40,33 @@ float ABoidManager::GetLocalFlockRadius()
 	return LocalFlockRadius;
 }
 
+float ABoidManager::GetSeparationRadius()
+{
+	return SeparationRadius;
+}
+
+float ABoidManager::GetSeparationStrength()
+{
+	return SeparationStrength;
+}
+
+float ABoidManager::GetAlignRadius()
+{
+	return AlignRadius;
+}
+
+float ABoidManager::GetAlignStrength()
+{
+	return AlignStrength;
+}
+
+float ABoidManager::GetCohesionRadius()
+{
+	return CohesionRadius;
+}
+
+float ABoidManager::GetCohesionStrength()
+{
+	return CohesionStrength;
+}
+

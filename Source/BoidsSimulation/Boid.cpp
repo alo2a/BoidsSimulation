@@ -44,39 +44,165 @@ void ABoid::Tick(float DeltaTime)
 void ABoid::Steer(float DeltaTime)
 {
 	FVector Acceleration = FVector::ZeroVector;
-	Velocity += Acceleration * DeltaTime;
-	SetActorLocation(GetActorLocation()+(Velocity * DeltaTime));
+
+	TArray<AActor*> LocalFlock;
+	LocalFlockArea->GetOverlappingActors(LocalFlock,ABoid::StaticClass());
+
+	Acceleration += Separate(LocalFlock);
+	Acceleration += Align(LocalFlock);
+	Acceleration += Cohesion(LocalFlock);
 	
+	Velocity += Acceleration * DeltaTime;
+	Velocity = Velocity.GetClampedToSize(BoidManager -> GetMinSpeed(),BoidManager -> GetMaxSpeed());
+	SetActorLocation(GetActorLocation()+(Velocity * DeltaTime));
+	SetActorRotation(Velocity.ToOrientationQuat());
 }
 
 void ABoid::StayInBoundaries()
 {
 	FVector currentLocation = GetActorLocation();
-	if (currentLocation.X < -4000)
+	if (currentLocation.X < -1000)
 	{
-		currentLocation.X = 4000;
+		currentLocation.X = 1000;
 	}
-	else if (currentLocation.X > 4000)
+	else if (currentLocation.X > 1000)
 	{
-		currentLocation.X = -4000;
+		currentLocation.X = -1000;
 	}
-	if (currentLocation.Y < -4000)
+	if (currentLocation.Y < -1000)
 	{
-		currentLocation.Y = 4000;
+		currentLocation.Y = 1000;
 	}
-	else if (currentLocation.Y > 4000)
+	else if (currentLocation.Y > 1000)
 	{
-		currentLocation.Y = -4000;
+		currentLocation.Y = -1000;
 	}
-	if (currentLocation.Z < -4000)
+	if (currentLocation.Z < -1000)
 	{
-		currentLocation.Z = 4000;
+		currentLocation.Z = 1000;
 	}
-	else if (currentLocation.Z > 4000)
+	else if (currentLocation.Z > 1000)
 	{
-		currentLocation.Z = -4000;
+		currentLocation.Z = -1000;
 	}
 
 	SetActorLocation(currentLocation);
+}
+
+FVector ABoid::Separate(TArray<AActor*> LocalFlock)
+{
+	FVector Steering = FVector::ZeroVector;
+	FVector SeparationDirection= FVector::ZeroVector;
+	
+	int FlockCount = 0;
+
+	for (AActor * OtherBoid : LocalFlock)
+	{
+		if (OtherBoid != nullptr && OtherBoid != this)
+		{
+			float DistanceToOtherBoid = FVector::Dist(GetActorLocation(), OtherBoid->GetActorLocation());
+
+			if (DistanceToOtherBoid > BoidManager -> GetSeparationRadius())
+			{
+				continue;
+			}
+
+			SeparationDirection = GetActorLocation() - OtherBoid->GetActorLocation();
+			SeparationDirection = SeparationDirection.GetSafeNormal();
+
+			Steering += SeparationDirection;
+			FlockCount++;
+		}
+
+		if (FlockCount > 0)
+		{
+			Steering /= FlockCount;
+			Steering = Steering.GetSafeNormal();
+			Steering -= Velocity.GetSafeNormal();
+			Steering *= BoidManager -> GetSeparationStrength();
+
+			return Steering;
+		}
+	}
+	
+	return  FVector();
+}
+
+FVector ABoid::Align(TArray<AActor*> LocalFlock)
+{
+	FVector Steering = FVector::ZeroVector;
+	
+	int FlockCount = 0;
+
+	for (AActor * OtherActor : LocalFlock)
+	{
+		if (OtherActor != nullptr && OtherActor != this)
+		{
+
+			ABoid * OtherBoid = Cast<ABoid>(OtherActor);
+			float DistanceToOtherBoid = FVector::Dist(GetActorLocation(), OtherActor->GetActorLocation());
+
+			if (DistanceToOtherBoid > BoidManager -> GetAlignRadius())
+			{
+				continue;
+			}
+
+			Steering += OtherBoid->Velocity.GetSafeNormal();
+			Steering = Steering.GetSafeNormal();
+			
+			FlockCount++;
+		}
+
+		if (FlockCount > 0)
+		{
+			Steering /= FlockCount;
+			Steering = Steering.GetSafeNormal();
+			Steering -= Velocity.GetSafeNormal();
+			Steering *= BoidManager -> GetAlignStrength();
+
+			return Steering;
+		}
+	}
+	
+	return  FVector();
+}
+
+FVector ABoid::Cohesion(TArray<AActor*> LocalFlock)
+{
+	FVector Steering = FVector::ZeroVector;
+	FVector AveragePosition;
+	int FlockCount = 0;
+
+	for (AActor * OtherActor : LocalFlock)
+	{
+		if (OtherActor != nullptr && OtherActor != this)
+		{
+
+			float DistanceToOtherBoid = FVector::Distance(GetActorLocation(), OtherActor->GetActorLocation());
+
+			if (DistanceToOtherBoid > BoidManager -> GetCohesionRadius())
+			{
+				continue;
+			}
+			
+			AveragePosition += OtherActor->GetActorLocation();
+			
+			FlockCount++;
+		}
+
+		if (FlockCount > 0)
+		{
+			AveragePosition/=FlockCount;
+			
+			Steering = AveragePosition-GetActorLocation();
+			Steering = Steering.GetSafeNormal();
+			Steering -= Velocity.GetSafeNormal();
+			Steering *= BoidManager -> GetCohesionStrength();
+
+			return Steering;
+		}
+	}
+	
+	return  FVector();
 }
 

@@ -35,4 +35,9 @@ protected:
 
 	ABoidManager* BoidManager;
 	USphereComponent* LocalFlockArea;
+
+	FVector Separate(TArray<AActor*> LocalFlock);
+	FVector Align(TArray<AActor*> LocalFlock);
+	FVector Cohesion(TArray<AActor*> LocalFlock);
+
 };

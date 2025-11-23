@@ -33,9 +33,34 @@ public:
 	UPROPERTY(EditAnywhere)
 	float LocalFlockRadius;
 
+	UPROPERTY(EditAnywhere)
+	float SeparationRadius;
+
+	UPROPERTY(EditAnywhere)
+	float SeparationStrength;
+
+	UPROPERTY(EditAnywhere)
+	float AlignRadius;
+
+	UPROPERTY(EditAnywhere)
+	float AlignStrength;
+
+	UPROPERTY(EditAnywhere)
+	float CohesionRadius;
+
+	UPROPERTY(EditAnywhere)
+	float CohesionStrength;
+
 public:
 
 	float GetMinSpeed();
 	float GetMaxSpeed();
 	float GetLocalFlockRadius();
+	
+	float GetSeparationRadius();
+	float GetSeparationStrength();
+	float GetAlignRadius();
+	float GetAlignStrength();
+	float GetCohesionRadius();
+	float GetCohesionStrength();
 };
