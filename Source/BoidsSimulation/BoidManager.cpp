@@ -70,3 +70,13 @@ float ABoidManager::GetCohesionStrength()
 	return CohesionStrength;
 }
 
+float ABoidManager::GetObstacleAvoidanceRadius()
+{
+	return ObstacleAvoidanceRadius;
+}
+
+float ABoidManager::GetObstacleAvoidanceStrength()
+{
+	return ObstacleAvoidanceStrength;
+}
+

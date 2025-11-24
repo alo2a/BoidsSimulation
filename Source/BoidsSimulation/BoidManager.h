@@ -51,6 +51,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	float CohesionStrength;
 
+	UPROPERTY(EditAnywhere)
+	float ObstacleAvoidanceRadius;
+
+	UPROPERTY(EditAnywhere)
+	float ObstacleAvoidanceStrength;
+
 public:
 
 	float GetMinSpeed();
@@ -63,4 +69,6 @@ public:
 	float GetAlignStrength();
 	float GetCohesionRadius();
 	float GetCohesionStrength();
+	float GetObstacleAvoidanceRadius();
+	float GetObstacleAvoidanceStrength();
 };

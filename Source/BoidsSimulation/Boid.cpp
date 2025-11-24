@@ -48,6 +48,7 @@ void ABoid::Steer(float DeltaTime)
 	TArray<AActor*> LocalFlock;
 	LocalFlockArea->GetOverlappingActors(LocalFlock,ABoid::StaticClass());
 
+	Acceleration += AvoidObstacles();
 	Acceleration += Separate(LocalFlock);
 	Acceleration += Align(LocalFlock);
 	Acceleration += Cohesion(LocalFlock);
@@ -77,13 +78,13 @@ void ABoid::StayInBoundaries()
 	{
 		currentLocation.Y = -1000;
 	}
-	if (currentLocation.Z < -1000)
+	if (currentLocation.Z < -400)
 	{
-		currentLocation.Z = 1000;
+		currentLocation.Z = 400;
 	}
-	else if (currentLocation.Z > 1000)
+	else if (currentLocation.Z > 400)
 	{
-		currentLocation.Z = -1000;
+		currentLocation.Z = -400;
 	}
 
 	SetActorLocation(currentLocation);
@@ -206,3 +207,52 @@ FVector ABoid::Cohesion(TArray<AActor*> LocalFlock)
 	return  FVector();
 }
 
+FVector ABoid::AvoidObstacles()
+{
+	FVector Steering = FVector::ZeroVector;
+	FVector Forward = Velocity.GetSafeNormal();
+	FVector CurrentLocation = GetActorLocation();
+	float AvoidanceRadius = BoidManager->GetObstacleAvoidanceRadius();
+    
+	FVector Right = FVector::CrossProduct(FVector::UpVector, Forward).GetSafeNormal();
+	FVector Up = FVector::CrossProduct(Forward, Right).GetSafeNormal();
+    
+	TArray<FVector> RayDirections;
+	RayDirections.Add(Forward);
+	RayDirections.Add((Forward + Right * 0.5f).GetSafeNormal());
+	RayDirections.Add((Forward - Right * 0.5f).GetSafeNormal());
+	RayDirections.Add((Forward + Up * 0.5f).GetSafeNormal());
+	RayDirections.Add((Forward - Up * 0.5f).GetSafeNormal());
+    
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+    
+	FVector TotalAvoidance = FVector::ZeroVector;
+	int ObstacleCount = 0;
+    
+	for (const FVector& Direction : RayDirections)
+	{
+		FHitResult HitResult;
+		FVector RayEnd = CurrentLocation + (Direction * AvoidanceRadius);
+        
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, CurrentLocation, RayEnd, ECC_Visibility, QueryParams);
+        
+		if (bHit && Cast<ABoid>(HitResult.GetActor()) == nullptr)
+		{
+			FVector AwayFromObstacle = (CurrentLocation - HitResult.ImpactPoint).GetSafeNormal();
+			float Weight = 1.0f - (HitResult.Distance / AvoidanceRadius);
+            
+			TotalAvoidance += AwayFromObstacle * Weight;
+			ObstacleCount++;
+		}
+	}
+    
+	if (ObstacleCount > 0)
+	{
+		TotalAvoidance /= ObstacleCount;
+		Steering = TotalAvoidance.GetSafeNormal() - Velocity.GetSafeNormal();
+		Steering *= BoidManager->GetObstacleAvoidanceStrength();
+	}
+    
+	return Steering;
+}

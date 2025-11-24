@@ -20,11 +20,11 @@ void ABoidSpawner::BeginPlay()
 		FVector SpawnPosition;
 		if (EnableCenterSpawn)
 		{
-			SpawnPosition= FVector(0, 0, 0);
+			SpawnPosition= GetRandomPosition(-SpawnArea,SpawnArea);
 		}
 		else
 		{
-			SpawnPosition= GetRandomPosition(-SpawnArea,SpawnArea);
+			SpawnPosition= FVector(0, 0, 0);
 		}
 		FRotator SpawnRotation(0,FMath::RandRange(-180,180),0);
 
@@ -41,7 +41,7 @@ void ABoidSpawner::Tick(float DeltaTime)
 
 FVector ABoidSpawner::GetRandomPosition(double Min, double Max)
 {
-	FVector NewLocation(FMath::RandRange(Min,Max), FMath::RandRange(Min,Max), 0);
+	FVector NewLocation(FMath::RandRange(Min,Max), FMath::RandRange(Min,Max), FMath::RandRange(Min/4,Max/4));
 	return  NewLocation;
 }
 
